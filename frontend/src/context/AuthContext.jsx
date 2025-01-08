@@ -20,13 +20,13 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       // Make API call to login
-      // const response = await api.post('/auth/login', credentials);
-      // const { token, user } = response.data;
+      const response = await api.post('/auth/login', credentials);
+      const { token, user } = response.data;
       
       // For now, just mock the response
       const mockToken = 'mock-token';
-      localStorage.setItem('token', mockToken);
-      setUser({ token: mockToken });
+      localStorage.setItem('token', token);
+      setUser({ token: token });
       return true;
     } catch (error) {
       console.error('Login failed:', error);
