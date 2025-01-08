@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../services/api'; // Assuming the API file is named api.js
+import { auth } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -8,29 +8,42 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          // Validate token by fetching the profile
-          const profile = await auth.getProfile();
-          setUser({ ...profile.data, token });
-        } catch (error) {
-          console.error('Failed to fetch profile:', error);
-          localStorage.removeItem('token');
-        }
-      }
-      setLoading(false);
-    };
-    initializeAuth();
+    const token = localStorage.getItem('token');
+    if (token) {
+      setUser({ token });
+      // Optionally fetch user profile here
+      auth.getProfile()
+        .then(response => {
+          setUser(prevUser => ({
+            ...prevUser,
+            ...response.data.data.user
+          }));
+        })
+        .catch(error => {
+          console.error('Error fetching user profile:', error);
+          if (error.response?.status === 401) {
+            logout();
+          }
+        });
+    }
+    setLoading(false);
   }, []);
 
   const login = async (credentials) => {
     try {
       const response = await auth.login(credentials);
-      const { token, user: userData } = response.data;
+      const { token } = response.data.data;
+      
       localStorage.setItem('token', token);
-      setUser({ ...userData, token });
+      setUser({ token });
+      
+      // Fetch user profile after login
+      const profileResponse = await auth.getProfile();
+      setUser(prevUser => ({
+        ...prevUser,
+        ...profileResponse.data.data.user
+      }));
+      
       return true;
     } catch (error) {
       console.error('Login failed:', error);
@@ -40,12 +53,19 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData) => {
     try {
-      console.log("=========================");
       const response = await auth.signup(userData);
-      console.log(response);
-      const { token, user: userData } = response.data;
+      const { token } = response.data.data;
+      
       localStorage.setItem('token', token);
-      setUser({ ...userData, token });
+      setUser({ token });
+      
+      // Fetch user profile after signup
+      const profileResponse = await auth.getProfile();
+      setUser(prevUser => ({
+        ...prevUser,
+        ...profileResponse.data.data.user
+      }));
+      
       return true;
     } catch (error) {
       console.error('Signup failed:', error);
@@ -53,9 +73,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+  const logout = async () => {
+    try {
+      await auth.logout();
+      localStorage.removeItem('token');
+      setUser(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const value = {
@@ -66,11 +91,7 @@ export const AuthProvider = ({ children }) => {
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading ? children : <div>Loading...</div>}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
