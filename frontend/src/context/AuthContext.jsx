@@ -37,13 +37,13 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     try {
       // Make API call to register
-      // const response = await api.post('/auth/register', userData);
-      // const { token, user } = response.data;
+      const response = await api.post('/auth/register', userData);
+      const { token, user } = response.data;
       
       // For now, just mock the response
       const mockToken = 'mock-token';
-      localStorage.setItem('token', mockToken);
-      setUser({ token: mockToken });
+      localStorage.setItem('token', token);
+      setUser({ token: token });
       return true;
     } catch (error) {
       console.error('Signup failed:', error);
