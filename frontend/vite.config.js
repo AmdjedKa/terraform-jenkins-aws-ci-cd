@@ -6,5 +6,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
+    proxy: {
+      '/api/auth': 'http://auth-service:3001',
+      '/api/projects': 'http://project-service:3002',
+      '/api/tasks': 'http://task-service:3003',
+      '/api/users': 'http://user-service:3004',
+    },
   },
 })
