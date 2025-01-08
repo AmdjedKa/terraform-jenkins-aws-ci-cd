@@ -23,7 +23,7 @@ spec:
         - name: NODE_ENV
           value: "production"
         - name: AUTH_SERVICE_URL
-          value: "http://<AUTH_SERVICE_EXTERNAL_IP>:3001"
+          value: "http://10.0.12.149:3001"
         - name: PROJECT_SERVICE_URL
           value: "http://<PROJECT_SERVICE_EXTERNAL_IP>:3002"
         - name: TASK_SERVICE_URL
@@ -153,7 +153,7 @@ spec:
               name: db-secret
               key: password
         - name: AUTH_SERVICE_URL
-          value: "http://<AUTH_SERVICE_EXTERNAL_IP>:3001"
+          value: "http://10.0.12.149:3001"
         resources:
           requests:
             memory: "128Mi"
@@ -217,7 +217,7 @@ spec:
               name: db-secret
               key: password
         - name: AUTH_SERVICE_URL
-          value: "http://<AUTH_SERVICE_EXTERNAL_IP>:3001"
+          value: "http://10.0.12.149:3001"
         - name: PROJECT_SERVICE_URL
           value: "http://<PROJECT_SERVICE_EXTERNAL_IP>:3002"
         resources:
