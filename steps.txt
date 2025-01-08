@@ -1,0 +1,27 @@
+  -create key pair
+  -aws configure 
+  -aws configure set aws_session_token
+  -terraform init
+  -terraform apply --auto-approve
+  -jenkins:
+      -create credentials (access key, secrit key,session token)
+      -plugins:
+                -Pipeline: Stage View.
+                -nodejs
+                -eclipse
+                -prometheus
+                -docker.
+      -tools:
+              -docker
+              -nodejs
+              -jdk
+      -build Pipeline
+      -deployment pipeline
+  -MobaXterm:
+        -create new session:-ubuntu@IP address of ec2 instance
+                            -key.pem 
+        -nano access.sh
+        -copy the access.sh code 
+        -chmod a+x access.sh
+        - ./access.sh
+
