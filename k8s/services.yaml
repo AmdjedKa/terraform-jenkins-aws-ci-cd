@@ -23,11 +23,11 @@ spec:
         - name: NODE_ENV
           value: "production"
         - name: AUTH_SERVICE_URL
-          value: "http://auth-service"
+          value: "/api/auth"
         - name: PROJECT_SERVICE_URL
-          value: "http://project-service"
+          value: "/api/projects"
         - name: TASK_SERVICE_URL
-          value: "http://task-service"
+          value: "/api/tasks"
         resources:
           requests:
             memory: "128Mi"
@@ -46,7 +46,7 @@ spec:
     app: frontend
   ports:
     - protocol: TCP
-      port: 80
+      port: 3000
       targetPort: 3000
   type: LoadBalancer
 
@@ -108,7 +108,7 @@ spec:
     app: auth-service
   ports:
     - protocol: TCP
-      port: 80
+      port: 3001
       targetPort: 3001
   type: LoadBalancer
 
@@ -153,7 +153,7 @@ spec:
               name: db-secret
               key: password
         - name: AUTH_SERVICE_URL
-          value: "http://auth-service"
+          value: "/api/auth"
         resources:
           requests:
             memory: "128Mi"
@@ -172,7 +172,7 @@ spec:
     app: project-service
   ports:
     - protocol: TCP
-      port: 80
+      port: 3002
       targetPort: 3002
   type: LoadBalancer
 
@@ -217,9 +217,9 @@ spec:
               name: db-secret
               key: password
         - name: AUTH_SERVICE_URL
-          value: "http://auth-service"
+          value: "/api/auth"
         - name: PROJECT_SERVICE_URL
-          value: "http://project-service"
+          value: "/api/projects"
         resources:
           requests:
             memory: "128Mi"
@@ -238,6 +238,6 @@ spec:
     app: task-service
   ports:
     - protocol: TCP
-      port: 80
+      port: 3003
       targetPort: 3003
   type: LoadBalancer
