@@ -115,6 +115,11 @@ pipeline {
                             kubectl get pods -l app=\$app -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' || exit 1
                         done
                     """
+
+                    // Print the ingress URL
+                    sh """
+                        kubectl get ingress microservices-ingress
+                    """
                 }
             }
         }
