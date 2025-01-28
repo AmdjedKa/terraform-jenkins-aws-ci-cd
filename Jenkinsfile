@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    // tools {
-    //     nodejs 'NodeJS'
-    // }
-
     environment {
         AWS_ACCOUNT_ID = '851725608377'
         AWS_REGION = 'us-east-1'
@@ -12,7 +8,7 @@ pipeline {
         CLUSTER_NAME = 'main-cluster'
         GITHUB_REPO = "https://github.com/AmdjedKa/ci-cd-aws-microservices-terraform-jenkins.git"
         DOCKER_BUILDKIT = '1'
-        DOCKER_REGISTRY = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+        ECR_REGISTRY = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         BUILD_VERSION = "${BUILD_NUMBER}"
     }
 
@@ -40,26 +36,6 @@ pipeline {
             }
         }
 
-        // stage('Install Dependencies') {
-        //     steps {
-        //         sh """
-        //             cd ./frontend
-        //             npm install --force
-                    
-        //             cd ../backend/services/auth-service
-        //             npm install --force
-                    
-        //             cd ../project-service
-        //             npm install --force
-                    
-        //             cd ../task-service
-        //             npm install --force
-                    
-        //             cd ../../..
-        //         """
-        //     }
-        // }
-
         stage('Create ECR Repositories') {
             steps {
                 script {
@@ -81,7 +57,7 @@ pipeline {
                     def services = ['frontend', 'auth-service', 'project-service', 'task-service']
 
                     // Login to ECR
-                    sh "aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${env.DOCKER_REGISTRY}"
+                    sh "aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REGISTRY}"
                     
                     services.each { service ->
                         def path = service == 'frontend' ? service : "backend/services/${service}"
@@ -89,10 +65,10 @@ pipeline {
                         sh """
                             cd ${path}
                             docker build -t ${service}:${env.BUILD_VERSION} .
-                            docker tag ${service}:${env.BUILD_VERSION} ${env.DOCKER_REGISTRY}/${service}:${env.BUILD_VERSION}
-                            docker tag ${service}:${env.BUILD_VERSION} ${env.DOCKER_REGISTRY}/${service}:latest
-                            docker push ${env.DOCKER_REGISTRY}/${service}:${env.BUILD_VERSION}
-                            docker push ${env.DOCKER_REGISTRY}/${service}:latest
+                            docker tag ${service}:${env.BUILD_VERSION} ${env.ECR_REGISTRY}/${service}:${env.BUILD_VERSION}
+                            docker tag ${service}:${env.BUILD_VERSION} ${env.ECR_REGISTRY}/${service}:latest
+                            docker push ${env.ECR_REGISTRY}/${service}:${env.BUILD_VERSION}
+                            docker push ${env.ECR_REGISTRY}/${service}:latest
                             cd -
                         """
                     }
@@ -100,9 +76,13 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to EKS') {
             steps {
                 script {
+                    // Configure kubectl
+                    sh """
+                        aws eks update-kubeconfig --name ${env.CLUSTER_NAME} --region ${env.AWS_REGION}
+                    """
 
                     // Apply the consolidated manifest file with variable substitution
                     sh """
@@ -154,8 +134,8 @@ pipeline {
 
                     services.each { service ->
                         sh """
-                            docker rmi ${env.DOCKER_REGISTRY}/${service}:${env.BUILD_VERSION} || true
-                            docker rmi ${env.DOCKER_REGISTRY}/${service}:latest || true
+                            docker rmi ${env.ECR_REGISTRY}/${service}:${env.BUILD_VERSION} || true
+                            docker rmi ${env.ECR_REGISTRY}/${service}:latest || true
                             docker rmi ${service}:${env.BUILD_VERSION} || true
                         """
                     }
