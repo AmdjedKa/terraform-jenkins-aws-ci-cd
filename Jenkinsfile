@@ -64,13 +64,11 @@ pipeline {
         stage('Create ECR Repositories') {
             steps {
                 script {
-                    {
-                        env.services.each { service ->
-                            sh """
-                                aws ecr describe-repositories --repository-names ${service} --region ${env.AWS_REGION} || \
-                                aws ecr create-repository --repository-name ${service} --region ${env.AWS_REGION}
-                            """
-                        }
+                    env.services.each { service ->
+                        sh """
+                            aws ecr describe-repositories --repository-names ${service} --region ${env.AWS_REGION} || \
+                            aws ecr create-repository --repository-name ${service} --region ${env.AWS_REGION}
+                        """
                     }
                 }
             }
