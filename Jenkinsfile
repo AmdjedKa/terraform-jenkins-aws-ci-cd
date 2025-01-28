@@ -89,6 +89,11 @@ pipeline {
                         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
                     """
 
+                    // Wait for the NGINX Ingress controller pod to be running
+                    sh """
+                        kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
+                    """
+
                     // Apply the consolidated manifest file with variable substitution
                     sh """
                         for file in k8s/deployments/*.yaml; do
