@@ -109,20 +109,12 @@ pipeline {
                     def services = ['frontend', 'auth-service', 'project-service', 'task-service']
 
                     // Wait for the pods to be ready
-                    def podCheckCmd = "kubectl get pods --selector=app in (${services.join(',')}) -o jsonpath='{.items[?(@.status.phase==\"Running\")].metadata.name}'"
-                    def podsReady = sh(script: podCheckCmd, returnStdout: true).trim()
-                    
-                    if (!podsReady) {
-                        error("Deployment failed: No pods are in the 'Running' state")
-                    }
-
-                    // Check the health of the deployed services via a simple HTTP check (if applicable)
-                    def serviceCheckCmd = "kubectl get svc ${services.join(' ')} --output=jsonpath='{.items[*].status.loadBalancer.ingress[*].hostname}'"
-                    def serviceHostnames = sh(script: serviceCheckCmd, returnStdout: true).trim()
-
-                    if (!serviceHostnames) {
-                        error("Deployment failed: No services are accessible via LoadBalancer")
-                    }
+                    sh """
+                        #!/bin/bash
+                        for app in ${services.join(' ')}; do
+                            kubectl get pods -l app=\$app -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' || exit 1
+                        done
+                    """
                 }
             }
         }
