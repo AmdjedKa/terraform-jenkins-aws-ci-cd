@@ -11,7 +11,6 @@ pipeline {
         VERSION = 'latest'
         CLUSTER_NAME = 'main-cluster'
         GITHUB_REPO = "https://github.com/AmdjedKa/ci-cd-aws-microservices-terraform-jenkins.git"
-        services = ['frontend', 'auth-service', 'project-service', 'task-service']
         DOCKER_BUILDKIT = '1'
         DOCKER_REGISTRY = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         BUILD_VERSION = "${BUILD_NUMBER}"
@@ -64,7 +63,9 @@ pipeline {
         stage('Create ECR Repositories') {
             steps {
                 script {
-                    env.services.each { service ->
+                    def services = ['frontend', 'auth-service', 'project-service', 'task-service']
+
+                    services.each { service ->
                         sh """
                             aws ecr describe-repositories --repository-names ${service} --region ${env.AWS_REGION} || \
                             aws ecr create-repository --repository-name ${service} --region ${env.AWS_REGION}
@@ -77,10 +78,12 @@ pipeline {
         stage('Build and Push Docker Images to ECR') {
             steps {
                 script {
+                    def services = ['frontend', 'auth-service', 'project-service', 'task-service']
+
                     // Login to ECR
                     sh "aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${env.DOCKER_REGISTRY}"
                     
-                    env.services.each { service ->
+                    services.each { service ->
                         def path = service == 'frontend' ? service : "backend/services/${service}"
                         
                         sh """
@@ -123,8 +126,10 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 script {
+                    def services = ['frontend', 'auth-service', 'project-service', 'task-service']
+
                     // Wait for the pods to be ready
-                    def podCheckCmd = "kubectl get pods --selector=app in (${env.services.join(',')}) -o jsonpath='{.items[?(@.status.phase==\"Running\")].metadata.name}'"
+                    def podCheckCmd = "kubectl get pods --selector=app in (${services.join(',')}) -o jsonpath='{.items[?(@.status.phase==\"Running\")].metadata.name}'"
                     def podsReady = sh(script: podCheckCmd, returnStdout: true).trim()
                     
                     if (!podsReady) {
@@ -132,7 +137,7 @@ pipeline {
                     }
 
                     // Check the health of the deployed services via a simple HTTP check (if applicable)
-                    def serviceCheckCmd = "kubectl get svc ${env.services.join(' ')} --output=jsonpath='{.items[*].status.loadBalancer.ingress[*].hostname}'"
+                    def serviceCheckCmd = "kubectl get svc ${services.join(' ')} --output=jsonpath='{.items[*].status.loadBalancer.ingress[*].hostname}'"
                     def serviceHostnames = sh(script: serviceCheckCmd, returnStdout: true).trim()
 
                     if (!serviceHostnames) {
@@ -145,8 +150,9 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
+                    def services = ['frontend', 'auth-service', 'project-service', 'task-service']
 
-                    env.services.each { service ->
+                    services.each { service ->
                         sh """
                             docker rmi ${env.DOCKER_REGISTRY}/${service}:${env.BUILD_VERSION} || true
                             docker rmi ${env.DOCKER_REGISTRY}/${service}:latest || true
