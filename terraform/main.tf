@@ -233,11 +233,6 @@ resource "aws_instance" "jenkins" {
       "sudo mv linux-amd64/helm /usr/local/bin/helm",
       "helm version",
 
-      # Install NGINX Ingress Controller using Helm
-      "helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx",
-      "helm repo update",
-      "helm install nginx-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace",
-
       # Install ArgoCD
       "VERSION=$(curl -L -s https://raw.githubusercontent.com/argoproj/argo-cd/stable/VERSION)",
       "curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v$VERSION/argocd-linux-amd64",

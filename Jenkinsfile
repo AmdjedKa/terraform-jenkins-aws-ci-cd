@@ -83,6 +83,11 @@ pipeline {
                     sh """
                         aws eks update-kubeconfig --name ${env.CLUSTER_NAME} --region ${env.AWS_REGION}
                     """
+                    
+                    // Install NGINX Ingress Controller
+                    sh """
+                        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+                    """
 
                     // Apply the consolidated manifest file with variable substitution
                     sh """
