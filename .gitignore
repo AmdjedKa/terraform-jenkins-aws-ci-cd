@@ -3,3 +3,4 @@ terraform/.terraform.lock.hcl
 terraform/key.pem
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
+terraform/terraform.tfvars

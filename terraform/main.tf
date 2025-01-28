@@ -233,6 +233,11 @@ resource "aws_instance" "jenkins" {
       "sudo mv linux-amd64/helm /usr/local/bin/helm",
       "helm version",
 
+      # Install NGINX Ingress Controller using Helm
+      "helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx",
+      "helm repo update",
+      "helm install nginx-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace",
+
       # Install ArgoCD
       "VERSION=$(curl -L -s https://raw.githubusercontent.com/argoproj/argo-cd/stable/VERSION)",
       "curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v$VERSION/argocd-linux-amd64",
@@ -257,7 +262,7 @@ resource "aws_instance" "jenkins" {
       "pass=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword)",
 
       # Output
-      "echo 'Access Jenkins Server here --> http://'$ip':8080'",
+      "echo 'Jenkins Server URL: http://'$ip':8080'",
       "echo 'Jenkins Initial Password: '$pass''",
     ]
   }
@@ -354,7 +359,7 @@ resource "aws_db_instance" "main" {
   allocated_storage    = 20
   storage_type        = "gp2"
   engine              = "postgres"
-  engine_version      = "13.11"
+  engine_version      = "13.18"
   instance_class      = "db.t3.micro"
   db_name             = var.database_name
   username            = var.database_username
@@ -400,4 +405,45 @@ resource "aws_db_subnet_group" "main" {
     Environment = var.environment
     Project     = var.project_name
   }
+}
+
+# Add output for RDS endpoint
+output "rds_endpoint" {
+  value = aws_db_instance.main.endpoint
+}
+
+
+# Add Kubernetes provider configuration after the AWS provider
+provider "kubernetes" {
+  host                   = aws_eks_cluster.my_eks.endpoint
+  cluster_ca_certificate = base64decode(aws_eks_cluster.my_eks.certificate_authority[0].data)
+  
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.my_eks.name]
+    command     = "aws"
+  }
+}
+
+# Add Kubernetes secret resource after the RDS instance
+resource "kubernetes_secret" "db_credentials" {
+  metadata {
+    name = "db-secret"
+    namespace = "default"
+  }
+
+  data = {
+    DB_NAME     = aws_db_instance.main.db_name
+    DB_USER     = aws_db_instance.main.username
+    DB_PASSWORD = aws_db_instance.main.password
+    DB_HOST     = aws_db_instance.main.endpoint
+    DB_PORT     = "5432"
+    DATABASE_URL = "postgresql://${aws_db_instance.main.username}:${aws_db_instance.main.password}@${aws_db_instance.main.endpoint}:5432/${aws_db_instance.main.db_name}"
+    JWT_SECRET  = var.jwt_secret
+  }
+
+  type = "Opaque"
+
+  # Add dependency to ensure the EKS cluster is created first
+  depends_on = [aws_eks_cluster.my_eks]
 }

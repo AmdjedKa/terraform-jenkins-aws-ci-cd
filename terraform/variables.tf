@@ -37,3 +37,9 @@ variable "database_password" {
   description = "Database master password"
   sensitive   = true
 }
+
+variable "jwt_secret" {
+  description = "Secret key for JWT token generation"
+  type        = string
+  sensitive   = true
+}
