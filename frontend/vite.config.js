@@ -10,7 +10,6 @@ export default defineConfig({
       '/api/auth': 'http://auth-service:3001',
       '/api/projects': 'http://project-service:3002',
       '/api/tasks': 'http://task-service:3003',
-      '/api/users': 'http://user-service:3004',
     },
   },
 })
