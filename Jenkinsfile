@@ -1,9 +1,9 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS'
-    }
+    // tools {
+    //     nodejs 'NodeJS'
+    // }
 
     environment {
         AWS_ACCOUNT_ID = '851725608377'
@@ -99,24 +99,25 @@ pipeline {
             }
         }
 
-        stage('Deploy to EKS') {
+        stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    {
-                        // Apply database secrets first
-                        sh """
-                            kubectl apply -f k8s/db-secret.yaml || true
-                        """
 
-                        // Apply the consolidated manifest file with variable substitution
-                        sh """
-                            cat k8s/services.yaml | \
-                            sed 's/\${AWS_ACCOUNT_ID}/${env.AWS_ACCOUNT_ID}/g' | \
-                            sed 's/\${AWS_REGION}/${env.AWS_REGION}/g' | \
-                            sed 's/\${BUILD_VERSION}/${env.BUILD_VERSION}/g' | \
+                    // Apply the consolidated manifest file with variable substitution
+                    sh """
+                        for file in k8s/deployments/*.yaml; do
+                            cat \$file | \
+                            sed 's/\\\${AWS_ACCOUNT_ID}/${env.AWS_ACCOUNT_ID}/g' | \
+                            sed 's/\\\${AWS_REGION}/${env.AWS_REGION}/g' | \
+                            sed 's/\\\${BUILD_VERSION}/${env.BUILD_VERSION}/g' | \
                             kubectl apply -f -
-                        """
-                    }
+                        done
+                    """
+                        
+                    sh """
+                        kubectl apply -f k8s/services/
+                        kubectl apply -f k8s/ingress.yaml
+                    """
                 }
             }
         }
@@ -124,62 +125,20 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 script {
-                    // Initial status check
-                    sh """
-                        echo "Current Pods Status:"
-                        kubectl get pods -o wide
-                        
-                        echo "\nCurrent Services Status:"
-                        kubectl get svc
-                        
-                        echo "\nCurrent Deployments Status:"
-                        kubectl get deployments
-                    """
+                    // Wait for the pods to be ready
+                    def podCheckCmd = "kubectl get pods --selector=app in (${env.services.join(',')}) -o jsonpath='{.items[?(@.status.phase==\"Running\")].metadata.name}'"
+                    def podsReady = sh(script: podCheckCmd, returnStdout: true).trim()
+                    
+                    if (!podsReady) {
+                        error("Deployment failed: No pods are in the 'Running' state")
+                    }
 
-                    env.services.each { service ->
-                        try {
-                            echo "Checking deployment status for ${service}..."
-                            
-                            // Wait for deployment
-                            def rolloutStatus = sh(script: "kubectl rollout status deployment/${service} --timeout=60s", returnStatus: true)
-                            
-                            if (rolloutStatus != 0) {
-                                echo "Deployment for ${service} failed or timed out. Checking pod logs..."
-                                
-                                // Get pod names for this service
-                                def podNames = sh(script: "kubectl get pods -l app=${service} -o jsonpath='{.items[*].metadata.name}'", returnStdout: true).trim()
-                                
-                                if (podNames) {
-                                    podNames.tokenize().each { podName ->
-                                        echo "Logs for pod ${podName}:"
-                                        sh "kubectl logs ${podName} --all-containers=true || true"
-                                        
-                                        echo "Describing pod ${podName}:"
-                                        sh "kubectl describe pod ${podName} || true"
-                                    }
-                                }
-                                
-                                echo "Describing deployment ${service}:"
-                                sh "kubectl describe deployment ${service} || true"
-                                
-                                // Check events
-                                echo "Recent events:"
-                                sh "kubectl get events --sort-by='.lastTimestamp' || true"
-                                
-                                error "Deployment for ${service} failed. Check the logs above for details."
-                            } else {
-                                echo "Deployment for ${service} succeeded!"
-                                
-                                // Get service endpoint if it's the frontend
-                                if (service == 'frontend') {
-                                    echo "Getting frontend service endpoint..."
-                                    sh "kubectl get svc frontend -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'"
-                                }
-                            }
-                        } catch (Exception e) {
-                            echo "Error occurred while verifying ${service} deployment: ${e.message}"
-                            throw e
-                        }
+                    // Check the health of the deployed services via a simple HTTP check (if applicable)
+                    def serviceCheckCmd = "kubectl get svc ${env.services.join(' ')} --output=jsonpath='{.items[*].status.loadBalancer.ingress[*].hostname}'"
+                    def serviceHostnames = sh(script: serviceCheckCmd, returnStdout: true).trim()
+
+                    if (!serviceHostnames) {
+                        error("Deployment failed: No services are accessible via LoadBalancer")
                     }
                 }
             }
@@ -188,14 +147,8 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    def services = []
-                    if (env.SERVICE == 'all') {
-                        services = ['frontend', 'auth-service', 'project-service', 'task-service']
-                    } else {
-                        services = [env.SERVICE]
-                    }
 
-                    services.each { service ->
+                    env.services.each { service ->
                         sh """
                             docker rmi ${env.DOCKER_REGISTRY}/${service}:${env.BUILD_VERSION} || true
                             docker rmi ${env.DOCKER_REGISTRY}/${service}:latest || true
