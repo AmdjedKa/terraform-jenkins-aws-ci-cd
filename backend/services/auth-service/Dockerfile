@@ -9,6 +9,10 @@ COPY package*.json ./
 RUN npm install --legacy-peer-deps --force && \
     npm cache clean --force
 
+
+# Install psql client
+RUN apk update && apk add postgresql-client
+
 # Copy source code
 COPY . .
 

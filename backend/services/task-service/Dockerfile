@@ -8,6 +8,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+# Install psql client
+RUN apk update && apk add postgresql-client
+
 # Copy source code
 COPY . .
 
