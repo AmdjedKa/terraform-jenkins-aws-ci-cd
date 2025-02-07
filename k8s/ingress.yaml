@@ -10,13 +10,6 @@ spec:
   rules:
   - http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend
-            port:
-              number: 3000
       - path: /api/auth/?(.*)
         pathType: ImplementationSpecific
         backend:
@@ -38,3 +31,10 @@ spec:
             name: task-service
             port:
               number: 3003
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
