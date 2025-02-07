@@ -1,5 +1,4 @@
 const express = require('express');
-const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
 const { sequelize } = require('./config/database');
 require('dotenv').config();
@@ -7,11 +6,12 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: '*', // Allow all origins
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allow common HTTP methods
-  allowedHeaders: 'Content-Type,Authorization', // Allow common headers
-}));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 app.use(express.json());
 
 // Routes
