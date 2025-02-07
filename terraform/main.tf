@@ -251,19 +251,8 @@ resource "aws_instance" "jenkins" {
       "sudo apt-get install -y jenkins",
       "sudo systemctl start jenkins",
       "sudo systemctl enable jenkins",
-
-      # Get Jenkins initial login password
-      "ip=$(curl -s ifconfig.me)",
-      "pass=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword)",
-
-      # Output
-      "echo 'Jenkins Server URL: http://'$ip':8080'",
-      "echo 'Jenkins Initial Password: '$pass''",
     ]
   }
-
-  
-
 }
 
 # EKS Cluster
@@ -298,22 +287,6 @@ resource "aws_eks_node_group" "main" {
   }
 }
 
-# STEP3: GET EC2 USER NAME AND PUBLIC IP 
-output "SERVER-SSH-ACCESS" {
-  value = "ubuntu@${aws_instance.jenkins.public_ip}"
-}
-
-# STEP4: GET EC2 PUBLIC IP 
-output "PUBLIC-IP" {
-  value = "${aws_instance.jenkins.public_ip}"
-}
-
-# STEP5: GET EC2 PRIVATE IP 
-output "PRIVATE-IP" {
-  value = "${aws_instance.jenkins.private_ip}"
-}
-
-
 # Security Group for EKS
 resource "aws_security_group" "eks" {
   name        = "eks-cluster-sg"
@@ -345,7 +318,6 @@ resource "aws_security_group" "eks" {
     Name                         = "eks-sg"
     "kubernetes.io/cluster/main-cluster" = "shared"
   }
-
 }
 
 # RDS Database
@@ -383,6 +355,15 @@ resource "aws_security_group" "rds" {
     security_groups = [aws_security_group.eks.id]
   }
 
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -401,12 +382,6 @@ resource "aws_db_subnet_group" "main" {
     Project     = var.project_name
   }
 }
-
-# Add output for RDS endpoint
-output "rds_endpoint" {
-  value = aws_db_instance.main.endpoint
-}
-
 
 # Add Kubernetes provider configuration after the AWS provider
 provider "kubernetes" {
@@ -431,14 +406,13 @@ resource "kubernetes_secret" "db_credentials" {
     DB_NAME     = aws_db_instance.main.db_name
     DB_USER     = aws_db_instance.main.username
     DB_PASSWORD = aws_db_instance.main.password
-    DB_HOST     = aws_db_instance.main.endpoint
+    DB_HOST     = split(":", aws_db_instance.main.endpoint)[0]  # Extract hostname without port
     DB_PORT     = "5432"
-    DATABASE_URL = "postgresql://${aws_db_instance.main.username}:${aws_db_instance.main.password}@${aws_db_instance.main.endpoint}:5432/${aws_db_instance.main.db_name}"
+    DATABASE_URL = "postgresql://${aws_db_instance.main.username}:${aws_db_instance.main.password}@${split(":", aws_db_instance.main.endpoint)[0]}:5432/${aws_db_instance.main.db_name}"
     JWT_SECRET  = var.jwt_secret
   }
 
   type = "Opaque"
 
-  # Add dependency to ensure the EKS cluster is created first
   depends_on = [aws_eks_cluster.my_eks]
 }
