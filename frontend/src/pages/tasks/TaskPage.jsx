@@ -134,7 +134,7 @@ const TaskPage = () => {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="block w-40 rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:bg-gray-800 dark:text-gray-300"
+          className="block w-44 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-300 shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500 hover:border-primary-400 dark:hover:border-primary-500 transition"
         >
           <option value="all">All Tasks</option>
           <option value="todo">To Do</option>

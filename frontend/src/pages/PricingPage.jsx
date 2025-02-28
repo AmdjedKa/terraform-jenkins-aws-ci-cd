@@ -3,34 +3,31 @@ import { CheckIcon } from '@heroicons/react/24/outline';
 
 const tiers = [
   {
-    name: 'Starter',
-    id: 'tier-starter',
+    name: 'Basic',
+    id: 'tier-basic',
     href: '#',
-    priceMonthly: '$15',
-    description: 'Perfect for individuals and small teams getting started.',
+    priceMonthly: '$10',
+    description: 'Perfect for individual users managing simple tasks.',
     features: [
-      'Up to 5 projects',
-      '10GB storage',
-      'Basic task management',
+      'Up to 3 projects',
+      '5GB storage',
+      'Task prioritization',
       'Email support',
-      'API access',
     ],
     featured: false,
   },
   {
-    name: 'Professional',
-    id: 'tier-professional',
+    name: 'Pro',
+    id: 'tier-pro',
     href: '#',
-    priceMonthly: '$30',
-    description: 'Ideal for growing teams and organizations.',
+    priceMonthly: '$25',
+    description: 'Ideal for teams managing complex projects and tasks.',
     features: [
       'Unlimited projects',
-      '50GB storage',
+      '20GB storage',
       'Advanced task management',
+      'Task collaboration',
       'Priority support',
-      'Advanced API access',
-      'Custom workflows',
-      'Team collaboration tools',
     ],
     featured: true,
   },
@@ -39,16 +36,13 @@ const tiers = [
     id: 'tier-enterprise',
     href: '#',
     priceMonthly: 'Custom',
-    description: 'Dedicated support and infrastructure for your company.',
+    description: 'Tailored support and tools for large teams and businesses.',
     features: [
-      'Unlimited everything',
+      'Unlimited projects and tasks',
       'Custom storage limits',
-      'Enterprise task management',
-      '24/7 phone & email support',
-      'Premium API access',
-      'Custom integrations',
-      'Advanced security features',
-      'Dedicated account manager',
+      'Custom task workflows',
+      '24/7 support',
+      'Advanced reporting and analytics',
     ],
     featured: false,
   },
@@ -70,11 +64,11 @@ const PricingPage = () => {
         >
           <h2 className="text-base font-semibold leading-7 text-primary-600">Pricing</h2>
           <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
-            Choose the right plan for&nbsp;you
+            Choose the right plan for your productivity
           </p>
         </motion.div>
         <p className="mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-gray-600 dark:text-gray-400">
-          Whether you're a solo developer or a large team, we have a plan that's perfect for your needs.
+          Whether you're managing personal tasks or collaborating with a team, our plans are built to suit your needs.
         </p>
         <div className="mt-16 grid max-w-lg grid-cols-1 gap-y-6 sm:mt-20 sm:gap-y-0 lg:max-w-none lg:grid-cols-3 lg:gap-8">
           {tiers.map((tier, index) => (

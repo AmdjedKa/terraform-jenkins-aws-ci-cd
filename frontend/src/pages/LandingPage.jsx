@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRightIcon,
-  UserGroupIcon,
+  CheckCircleIcon,
+  CalendarIcon,
   LockClosedIcon,
-  SparklesIcon,
 } from '@heroicons/react/24/outline';
 
 const FeatureCard = ({ icon: Icon, title, description }) => (
@@ -25,20 +25,20 @@ const FeatureCard = ({ icon: Icon, title, description }) => (
 const LandingPage = () => {
   const features = [
     {
-      icon: UserGroupIcon,
-      title: "Team Collaboration",
-      description: "Work together seamlessly with your team members in real-time."
+      icon: CheckCircleIcon,
+      title: "Simple Task Management",
+      description: "Create, organize, and complete tasks with just a few clicks."
+    },
+    {
+      icon: CalendarIcon,
+      title: "Project Planning",
+      description: "Set deadlines, organize projects, and never miss important dates."
     },
     {
       icon: LockClosedIcon,
       title: "Secure Platform",
       description: "Enterprise-grade security to protect your sensitive data."
     },
-    {
-      icon: SparklesIcon,
-      title: "AI-Powered",
-      description: "Leverage artificial intelligence to boost your productivity."
-    }
   ];
 
   return (
@@ -53,11 +53,11 @@ const LandingPage = () => {
               transition={{ duration: 0.5 }}
             >
               <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
-                <span className="block">Transform Your</span>
-                <span className="block text-primary-600">Development Workflow</span>
+                <span className="block">Simplify Your</span>
+                <span className="block text-primary-600">Daily Tasks</span>
               </h1>
               <p className="mt-3 max-w-md mx-auto text-base text-gray-500 dark:text-gray-400 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                Streamline your development process with our powerful platform. Built for developers, by developers.
+                Stay organized and boost your productivity with our intuitive todo app. Focus on what matters most.
               </p>
             </motion.div>
 
@@ -92,7 +92,7 @@ const LandingPage = () => {
               Features that empower your workflow
             </h2>
             <p className="mt-4 text-gray-500 dark:text-gray-400">
-              Everything you need to manage your development process, all in one place.
+              Everything you need to stay on top of your tasks, all in one simple app.
             </p>
           </div>
 
@@ -115,8 +115,8 @@ const LandingPage = () => {
       <section className="bg-primary-600 dark:bg-primary-700">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between">
           <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            <span className="block">Ready to dive in?</span>
-            <span className="block text-primary-200">Start your free trial today.</span>
+            <span className="block">Ready to get organized?</span>
+            <span className="block text-primary-200">Start managing your tasks today.</span>
           </h2>
           <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

@@ -5,6 +5,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   UserCircleIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
 
@@ -37,18 +38,19 @@ const Navbar = () => {
   };
 
   return (
-    <Disclosure as="nav" className="bg-white dark:bg-gray-800 shadow-lg backdrop-blur-md bg-opacity-80 dark:bg-opacity-80 fixed w-full z-50">
+    <Disclosure as="nav" className="bg-white dark:bg-gray-800 shadow-lg backdrop-blur-md bg-opacity-90 dark:bg-opacity-90 fixed w-full z-50">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 justify-between">
               <div className="flex">
                 <div className="flex flex-shrink-0 items-center">
-                  <Link to="/" className="text-xl font-bold text-primary-600">
-                    MicroDevOps
+                  <Link to="/" className="flex items-center text-xl font-bold text-primary-600">
+                    <CheckCircleIcon className="h-6 w-6 mr-2" />
+                    <span>TaskMaster</span>
                   </Link>
                 </div>
-                <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
                   {filteredNavigation.map((item) => (
                     <Link
                       key={item.name}
@@ -56,8 +58,8 @@ const Navbar = () => {
                       className={classNames(
                         isCurrentPath(item.href)
                           ? 'border-primary-500 text-gray-900 dark:text-white'
-                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300',
-                        'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
+                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-primary-300 hover:text-gray-700 dark:hover:text-gray-300',
+                        'inline-flex items-center border-b-2 px-2 pt-1 text-sm font-medium transition-colors duration-200'
                       )}
                     >
                       {item.name}
@@ -71,7 +73,10 @@ const Navbar = () => {
                     <div>
                       <Menu.Button className="flex rounded-full bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                         <span className="sr-only">Open user menu</span>
-                        <UserCircleIcon className="h-8 w-8 text-gray-400" />
+                        <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-300">
+                          {user.name ? user.name.charAt(0).toUpperCase() : 
+                            <UserCircleIcon className="h-6 w-6" />}
+                        </div>
                       </Menu.Button>
                     </div>
                     <Transition
@@ -117,13 +122,13 @@ const Navbar = () => {
                   <div className="space-x-4">
                     <Link
                       to="/login"
-                      className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                      className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                     >
                       Sign in
                     </Link>
                     <Link
                       to="/signup"
-                      className="bg-primary-600 text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium"
+                      className="bg-primary-600 text-white hover:bg-primary-700 px-4 py-2 rounded-md text-sm font-medium shadow-sm hover:shadow transition-all duration-200"
                     >
                       Sign up
                     </Link>
@@ -131,7 +136,7 @@ const Navbar = () => {
                 )}
               </div>
               <div className="-mr-2 flex items-center sm:hidden">
-                <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500">
+                <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
                     <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
@@ -154,7 +159,7 @@ const Navbar = () => {
                     isCurrentPath(item.href)
                       ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-300'
                       : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300',
-                    'block border-l-4 py-2 pl-3 pr-4 text-base font-medium'
+                    'block border-l-4 py-2 pl-3 pr-4 text-base font-medium transition-colors duration-200'
                   )}
                 >
                   {item.name}
@@ -163,7 +168,19 @@ const Navbar = () => {
             </div>
             {user ? (
               <div className="border-t border-gray-200 dark:border-gray-700 pb-3 pt-4">
-                <div className="space-y-1">
+                <div className="flex items-center px-4">
+                  <div className="flex-shrink-0">
+                    <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-300">
+                      {user.name ? user.name.charAt(0).toUpperCase() : 
+                        <UserCircleIcon className="h-6 w-6" />}
+                    </div>
+                  </div>
+                  <div className="ml-3">
+                    <div className="text-base font-medium text-gray-800 dark:text-white">{user.name}</div>
+                    <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{user.email}</div>
+                  </div>
+                </div>
+                <div className="mt-3 space-y-1">
                   <Disclosure.Button
                     as={Link}
                     to="/profile"
@@ -193,7 +210,7 @@ const Navbar = () => {
                   <Disclosure.Button
                     as={Link}
                     to="/signup"
-                    className="block px-4 py-2 text-base font-medium text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="block px-4 py-2 text-base font-medium text-primary-600 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Sign up
                   </Disclosure.Button>
