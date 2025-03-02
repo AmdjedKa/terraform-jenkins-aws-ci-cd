@@ -5,7 +5,7 @@ variable "aws_region" {
 
 variable "project_name" {
   description = "Name of the project"
-  default     = "microservices-demo"
+  default     = "microservices-ci-cd"
 }
 
 variable "environment" {
@@ -25,7 +25,7 @@ variable "key_pair_name" {
 
 variable "database_name" {
   description = "Name of the database"
-  default     = "microservices"
+  default     = "prod"
 }
 
 variable "database_username" {

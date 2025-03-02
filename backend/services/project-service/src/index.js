@@ -3,7 +3,6 @@ const cors = require('cors');
 const { sequelize } = require('./config/database');
 const projectRoutes = require('./routes/project.routes');
 const { logger } = require('./utils/logger');
-require('dotenv').config();
 
 const app = express();
 

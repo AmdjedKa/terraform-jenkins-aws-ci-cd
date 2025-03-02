@@ -20,6 +20,17 @@ provider "aws" {
   region = var.aws_region
 }
 
+provider "kubernetes" {
+  host                   = aws_eks_cluster.my_eks.endpoint
+  cluster_ca_certificate = base64decode(aws_eks_cluster.my_eks.certificate_authority[0].data)
+  
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.my_eks.name]
+    command     = "aws"
+  }
+}
+
 # VPC Configuration
 resource "aws_vpc" "my_vpc" {
   cidr_block = var.vpc_cidr
@@ -255,38 +266,6 @@ resource "aws_instance" "jenkins" {
   }
 }
 
-# EKS Cluster
-resource "aws_eks_cluster" "my_eks" {
-  name     = "main-cluster"
-  role_arn = "arn:aws:iam::851725608377:role/LabRole"
-
-  vpc_config {
-    subnet_ids = concat(aws_subnet.public[*].id, aws_subnet.private[*].id)
-  }
-
-  enabled_cluster_log_types = ["api", "audit", "authenticator"]
-}
-
-# Node Group
-resource "aws_eks_node_group" "main" {
-  cluster_name    = aws_eks_cluster.my_eks.name
-  node_group_name = "main-node-group"
-  node_role_arn   = "arn:aws:iam::851725608377:role/LabRole"
-  subnet_ids      = aws_subnet.private[*].id
-
-  scaling_config {
-    desired_size = 2
-    max_size     = 4
-    min_size     = 1
-  }
-
-  instance_types = ["t2.medium"]
-
-  tags = {
-    "kubernetes.io/cluster/main-cluster" = "owned"
-  }
-}
-
 # Security Group for EKS
 resource "aws_security_group" "eks" {
   name        = "eks-cluster-sg"
@@ -320,6 +299,115 @@ resource "aws_security_group" "eks" {
   }
 }
 
+# EKS Cluster
+resource "aws_eks_cluster" "my_eks" {
+  name     = "main-cluster"
+  role_arn = "arn:aws:iam::851725608377:role/LabRole"
+
+  vpc_config {
+    subnet_ids = concat(aws_subnet.public[*].id, aws_subnet.private[*].id)
+    security_group_ids = [aws_security_group.eks.id]
+  }
+
+  enabled_cluster_log_types = ["api", "audit", "authenticator"]
+}
+
+# Node Group
+resource "aws_eks_node_group" "main" {
+  cluster_name    = aws_eks_cluster.my_eks.name
+  node_group_name = "main-node-group"
+  node_role_arn   = "arn:aws:iam::851725608377:role/LabRole"
+  subnet_ids      = aws_subnet.private[*].id
+
+  scaling_config {
+    desired_size = 2
+    max_size     = 4
+    min_size     = 1
+  }
+
+  instance_types = ["t2.medium"]
+
+  tags = {
+    "kubernetes.io/cluster/main-cluster" = "owned"
+  }
+}
+
+# Add Kubernetes secret resource (created after the RDS instance)
+resource "kubernetes_secret" "db_credentials" {
+  metadata {
+    name = "db-credentials"
+    namespace = "default"
+  }
+
+  data = {
+    DB_NAME     = aws_db_instance.main.db_name
+    DB_USER     = aws_db_instance.main.username
+    DB_PASSWORD = aws_db_instance.main.password
+    DB_HOST     = split(":", aws_db_instance.main.endpoint)[0]  # Extract hostname without port
+    DB_PORT     = "5432"
+    DATABASE_URL = "postgresql://${aws_db_instance.main.username}:${aws_db_instance.main.password}@${split(":", aws_db_instance.main.endpoint)[0]}:5432/${aws_db_instance.main.db_name}"
+  }
+
+  type = "Opaque"
+
+  depends_on = [aws_eks_cluster.my_eks]
+}
+
+resource "kubernetes_secret" "env" {
+  metadata {
+    name = "env"
+    namespace = "default"
+  }
+
+  data = {
+    NODE_ENV    = var.environment
+    JWT_SECRET  = var.jwt_secret
+  }
+
+  type = "Opaque"
+
+  depends_on = [aws_eks_cluster.my_eks]
+}
+
+# Security Group for RDS
+resource "aws_security_group" "rds" {
+  name_prefix = "${var.project_name}-rds-sg"
+  vpc_id      = aws_vpc.my_vpc.id
+
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    cidr_blocks = [ "10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24" ]
+    security_groups = [aws_security_group.eks.id] # Allow access from EKS cluster
+    description     = "PostgreSQL access from EKS"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "${var.project_name}-rds-sg"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+# DB Subnet Group
+resource "aws_db_subnet_group" "main" {
+  name       = "${var.project_name}-db-subnet"
+  subnet_ids = aws_subnet.private[*].id
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
 # RDS Database
 resource "aws_db_instance" "main" {
   identifier           = "${var.project_name}-db"
@@ -341,78 +429,4 @@ resource "aws_db_instance" "main" {
     Environment = var.environment
     Project     = var.project_name
   }
-}
-
-# Security Group for RDS
-resource "aws_security_group" "rds" {
-  name_prefix = "${var.project_name}-rds-sg"
-  vpc_id      = aws_vpc.my_vpc.id
-
-  ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.eks.id]
-  }
-
-  ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-# DB Subnet Group
-resource "aws_db_subnet_group" "main" {
-  name       = "${var.project_name}-db-subnet"
-  subnet_ids = aws_subnet.private[*].id
-
-  tags = {
-    Environment = var.environment
-    Project     = var.project_name
-  }
-}
-
-# Add Kubernetes provider configuration after the AWS provider
-provider "kubernetes" {
-  host                   = aws_eks_cluster.my_eks.endpoint
-  cluster_ca_certificate = base64decode(aws_eks_cluster.my_eks.certificate_authority[0].data)
-  
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.my_eks.name]
-    command     = "aws"
-  }
-}
-
-# Add Kubernetes secret resource after the RDS instance
-resource "kubernetes_secret" "db_credentials" {
-  metadata {
-    name = "db-secret"
-    namespace = "default"
-  }
-
-  data = {
-    DB_NAME     = aws_db_instance.main.db_name
-    DB_USER     = aws_db_instance.main.username
-    DB_PASSWORD = aws_db_instance.main.password
-    DB_HOST     = split(":", aws_db_instance.main.endpoint)[0]  # Extract hostname without port
-    DB_PORT     = "5432"
-    DATABASE_URL = "postgresql://${aws_db_instance.main.username}:${aws_db_instance.main.password}@${split(":", aws_db_instance.main.endpoint)[0]}:5432/${aws_db_instance.main.db_name}"
-    JWT_SECRET  = var.jwt_secret
-  }
-
-  type = "Opaque"
-
-  depends_on = [aws_eks_cluster.my_eks]
 }
