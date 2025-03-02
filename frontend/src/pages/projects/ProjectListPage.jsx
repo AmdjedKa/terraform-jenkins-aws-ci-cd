@@ -21,7 +21,6 @@ const ProjectListPage = () => {
         if (Array.isArray(response.data)) {
           setProjectList(response.data);
         } else {
-          console.error('Expected an array but got:', response.data);
           setProjectList([]); // Fallback to an empty array
         }
       } catch (error) {

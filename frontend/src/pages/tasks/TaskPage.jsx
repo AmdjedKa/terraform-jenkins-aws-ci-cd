@@ -29,7 +29,6 @@ const TaskPage = () => {
         if (Array.isArray(response.data)) {
           setTaskList(response.data);
         } else {
-          console.error('Expected an array but got:', response.data);
           setTaskList([]); // Fallback to an empty array
         }
       } catch (error) {

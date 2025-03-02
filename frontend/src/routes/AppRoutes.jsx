@@ -10,6 +10,7 @@ import PricingPage from '../pages/PricingPage';
 import ProjectListPage from '../pages/projects/ProjectListPage';
 import NewProjectPage from '../pages/projects/NewProjectPage';
 import TaskPage from '../pages/tasks/TaskPage';
+import NewTaskPage from '../pages/tasks/NewTaskPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -63,6 +64,12 @@ const AppRoutes = () => {
         <Route path="dashboard/tasks" element={
           <ProtectedRoute>
             <TaskPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="dashboard/tasks/new" element={
+          <ProtectedRoute>
+            <NewTaskPage />
           </ProtectedRoute>
         } />
 
