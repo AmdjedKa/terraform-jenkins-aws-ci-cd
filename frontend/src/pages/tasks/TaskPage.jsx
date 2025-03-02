@@ -25,7 +25,13 @@ const TaskPage = () => {
     const fetchTasks = async () => {
       try {
         const response = await tasks.getAll();
-        setTaskList(response.data);
+        // Ensure the response is an array
+        if (Array.isArray(response.data)) {
+          setTaskList(response.data);
+        } else {
+          console.error('Expected an array but got:', response.data);
+          setTaskList([]); // Fallback to an empty array
+        }
       } catch (error) {
         console.error('Failed to fetch tasks:', error);
         toast.error('Failed to load tasks');
@@ -33,7 +39,7 @@ const TaskPage = () => {
         setLoading(false);
       }
     };
-
+  
     fetchTasks();
   }, []);
 
@@ -41,17 +47,21 @@ const TaskPage = () => {
     e.preventDefault();
     try {
       const response = await tasks.create(newTask);
-      setTaskList([...taskList, response.data]);
-      setNewTask({
-        title: '',
-        description: '',
-        priority: 'medium',
-        dueDate: '',
-        assignee: '',
-        project: '',
-      });
-      setShowNewTaskForm(false);
-      toast.success('Task created successfully!');
+      if (response.data) {
+        setTaskList([...taskList, response.data]);
+        setNewTask({
+          title: '',
+          description: '',
+          priority: 'medium',
+          dueDate: '',
+          assignee: '',
+          project: '',
+        });
+        setShowNewTaskForm(false);
+        toast.success('Task created successfully!');
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
       console.error('Error creating task:', error);
       toast.error(error.response?.data?.message || 'Failed to create task');
@@ -106,6 +116,33 @@ const TaskPage = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (!taskList || taskList.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tasks</h1>
+            <p className="mt-2 text-sm text-gray-700 dark:text-gray-400">
+              A list of all your tasks and their current status
+            </p>
+          </div>
+          <div className="mt-4 sm:mt-0">
+            <Link
+              to="/dashboard/tasks/new"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+              New Task
+            </Link>
+          </div>
+        </div>
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          No tasks found. Create a new task to get started.
+        </div>
       </div>
     );
   }

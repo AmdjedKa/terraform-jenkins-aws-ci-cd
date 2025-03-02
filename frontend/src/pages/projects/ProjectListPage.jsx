@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   PlusIcon,
-  ChevronRightIcon,
   ClockIcon,
   UserGroupIcon,
   TagIcon,
@@ -19,7 +18,12 @@ const ProjectListPage = () => {
     const fetchProjects = async () => {
       try {
         const response = await projects.getAll();
-        setProjectList(response.data);
+        if (Array.isArray(response.data)) {
+          setProjectList(response.data);
+        } else {
+          console.error('Expected an array but got:', response.data);
+          setProjectList([]); // Fallback to an empty array
+        }
       } catch (error) {
         console.error('Failed to fetch projects:', error);
         toast.error('Failed to load projects');
@@ -61,6 +65,33 @@ const ProjectListPage = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (!projectList || projectList.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Projects</h1>
+            <p className="mt-2 text-sm text-gray-700 dark:text-gray-400">
+              A list of all projects and their current status
+            </p>
+          </div>
+          <div className="mt-4 sm:mt-0">
+            <Link
+              to="/dashboard/projects/new"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+              New Project
+            </Link>
+          </div>
+        </div>
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          No projects found. Create a new project to get started.
+        </div>
       </div>
     );
   }
