@@ -23,8 +23,19 @@ const SignupPage = () => {
     }));
   };
 
+  const validateEmail = (email) => {
+    const re = /^[A-Za-z0-9._%+-]{2,}@[A-Za-z0-9.-]{2,}\.[A-Za-z]{2,}$/;
+    return re.test(email);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateEmail(formData.email)) {
+      toast.error('Please enter a valid email');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
