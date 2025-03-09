@@ -14,7 +14,7 @@ const NewTaskPage = () => {
     dueDate: '',
     projectId: '',
     assigneeId: '',
-    createdById: '', // Assuming this will be set programmatically (e.g., from user context)
+    createdById: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -148,20 +148,6 @@ const NewTaskPage = () => {
                 id="projectId"
                 required
                 value={formData.projectId}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="assigneeId" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Assignee ID (Optional)
-              </label>
-              <input
-                type="text"
-                name="assigneeId"
-                id="assigneeId"
-                value={formData.assigneeId}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
               />

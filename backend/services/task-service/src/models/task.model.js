@@ -29,7 +29,7 @@ const Task = sequelize.define('Task', {
   },
   projectId: {
     type: DataTypes.UUID,
-    allowNull: false
+    allowNull: true
   },
   assigneeId: {
     type: DataTypes.UUID,
