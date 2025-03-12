@@ -13,7 +13,6 @@ const NewTaskPage = () => {
     priority: 'medium',
     dueDate: '',
     projectId: '',
-    assigneeId: '',
     createdById: '',
   });
   const [loading, setLoading] = useState(false);
@@ -30,8 +29,15 @@ const NewTaskPage = () => {
     e.preventDefault();
     setLoading(true);
 
+    const payload = {
+      ...formData,
+      description: formData.description || null,
+      dueDate: formData.dueDate || null,
+      projectId: formData.projectId || null,
+    };
+
     try {
-      await tasks.create(formData);
+      await tasks.create(payload);
       toast.success('Task created successfully!');
       navigate('/dashboard/tasks');
     } catch (error) {
@@ -146,7 +152,6 @@ const NewTaskPage = () => {
                 type="text"
                 name="projectId"
                 id="projectId"
-                required
                 value={formData.projectId}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"

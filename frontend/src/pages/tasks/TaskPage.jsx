@@ -17,7 +17,6 @@ const TaskPage = () => {
     description: '',
     priority: 'medium',
     dueDate: '',
-    assignee: '',
     project: '',
   });
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
@@ -45,8 +44,16 @@ const TaskPage = () => {
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
+
+    const payload = {
+      ...newTask,
+      description: newTask.description || null,
+      dueDate: newTask.dueDate || null,
+      projectId: newTask.projectId || null,
+    };
+
     try {
-      const response = await tasks.create(newTask);
+      const response = await tasks.create(payload);
       if (response.data) {
         setTaskList([...taskList, response.data]);
         setNewTask({
@@ -54,7 +61,6 @@ const TaskPage = () => {
           description: '',
           priority: 'medium',
           dueDate: '',
-          assignee: '',
           project: '',
         });
         setShowNewTaskForm(false);
@@ -212,7 +218,6 @@ const TaskPage = () => {
             <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center space-x-4">
                 <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
-                {task.assignee && <span>Assignee: {task.assignee}</span>}
                 {task.project && <span>Project: {task.project}</span>}
               </div>
             </div>

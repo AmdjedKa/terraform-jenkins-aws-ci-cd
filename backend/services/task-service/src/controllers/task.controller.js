@@ -3,7 +3,7 @@ const { logger } = require('../utils/logger');
 
 exports.createTask = async (req, res) => {
   try {
-    const { title, description, projectId, dueDate, priority, assigneeId } = req.body;
+    const { title, description, projectId, dueDate, priority } = req.body;
     const createdById = req.user.userId;
 
     const task = await Task.create({
@@ -12,7 +12,6 @@ exports.createTask = async (req, res) => {
       projectId,
       dueDate,
       priority,
-      assigneeId,
       createdById
     });
 
@@ -32,12 +31,12 @@ exports.createTask = async (req, res) => {
 
 exports.getTasks = async (req, res) => {
   try {
-    const { projectId, status, assigneeId } = req.query;
+    const { projectId, status, createdById } = req.query;
     const whereClause = {};
 
     if (projectId) whereClause.projectId = projectId;
     if (status) whereClause.status = status;
-    if (assigneeId) whereClause.assigneeId = assigneeId;
+    if (createdById) whereClause.createdById = createdById;
 
     const tasks = await Task.findAll({
       where: whereClause,

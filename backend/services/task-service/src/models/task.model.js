@@ -31,10 +31,6 @@ const Task = sequelize.define('Task', {
     type: DataTypes.UUID,
     allowNull: true
   },
-  assigneeId: {
-    type: DataTypes.UUID,
-    allowNull: true
-  },
   createdById: {
     type: DataTypes.UUID,
     allowNull: false
