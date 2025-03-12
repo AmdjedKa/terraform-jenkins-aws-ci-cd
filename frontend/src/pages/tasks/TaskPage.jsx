@@ -25,9 +25,8 @@ const TaskPage = () => {
     const fetchTasks = async () => {
       try {
         const response = await tasks.getAll();
-        // Ensure the response is an array
-        if (Array.isArray(response.data)) {
-          setTaskList(response.data);
+        if (Array.isArray(response.data?.data)) {
+          setTaskList(response.data?.data);
         } else {
           setTaskList([]); // Fallback to an empty array
         }
