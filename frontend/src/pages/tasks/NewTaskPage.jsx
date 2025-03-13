@@ -32,7 +32,6 @@ const NewTaskPage = () => {
     const payload = {
       ...formData,
       description: formData.description || null,
-      dueDate: formData.dueDate || null,
       projectId: formData.projectId || null,
     };
 
@@ -138,6 +137,7 @@ const NewTaskPage = () => {
                 type="date"
                 name="dueDate"
                 id="dueDate"
+                required
                 value={formData.dueDate}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"

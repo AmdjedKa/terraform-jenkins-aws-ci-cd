@@ -25,7 +25,7 @@ const Task = sequelize.define('Task', {
   },
   dueDate: {
     type: DataTypes.DATE,
-    allowNull: true
+    allowNull: false
   },
   projectId: {
     type: DataTypes.UUID,
