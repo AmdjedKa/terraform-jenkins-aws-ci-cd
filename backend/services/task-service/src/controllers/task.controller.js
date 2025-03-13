@@ -3,15 +3,16 @@ const { logger } = require('../utils/logger');
 
 exports.createTask = async (req, res) => {
   try {
-    const { title, description, projectId, dueDate, priority } = req.body;
+    const { title, description, status, priority, dueDate, projectId } = req.body;
     const createdById = req.user.userId;
 
     const task = await Task.create({
       title,
       description,
-      projectId,
-      dueDate,
+      status,
       priority,
+      dueDate,
+      projectId,
       createdById
     });
 
