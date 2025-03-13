@@ -3,12 +3,13 @@ const { logger } = require('../utils/logger');
 
 exports.createProject = async (req, res) => {
   try {
-    const { name, description, startDate, endDate } = req.body;
+    const { name, description, status, startDate, endDate } = req.body;
     const ownerId = req.user.userId;
 
     const project = await Project.create({
       name,
       description,
+      status,
       startDate,
       endDate,
       ownerId

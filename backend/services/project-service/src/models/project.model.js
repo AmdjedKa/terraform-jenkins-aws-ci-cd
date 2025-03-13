@@ -25,7 +25,7 @@ const Project = sequelize.define('Project', {
   },
   endDate: {
     type: DataTypes.DATE,
-    allowNull: true
+    allowNull: false
   },
   ownerId: {
     type: DataTypes.UUID,

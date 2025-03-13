@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import {
   PlusIcon,
   ClockIcon,
-  UserGroupIcon,
-  TagIcon,
 } from '@heroicons/react/24/outline';
 import { projects } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -18,8 +16,8 @@ const ProjectListPage = () => {
     const fetchProjects = async () => {
       try {
         const response = await projects.getAll();
-        if (Array.isArray(response.data)) {
-          setProjectList(response.data);
+        if (Array.isArray(response.data?.data)) {
+          setProjectList(response.data?.data);
         } else {
           setProjectList([]); // Fallback to an empty array
         }
@@ -34,26 +32,13 @@ const ProjectListPage = () => {
     fetchProjects();
   }, []);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'in-progress':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'planning':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-    }
-  };
-
-  const getPriorityColor = (priority) => {
+  const getStatusColor = (priority) => {
     switch (priority) {
-      case 'high':
+      case 'on-hold':
         return 'text-red-600';
-      case 'medium':
-        return 'text-yellow-600';
-      case 'low':
+      case 'active':
+        return 'text-blue-600';
+      case 'completed':
         return 'text-green-600';
       default:
         return 'text-gray-600';
@@ -144,29 +129,8 @@ const ProjectListPage = () => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                     <ClockIcon className="h-4 w-4 mr-1" />
-                    <span>{new Date(project.endDate).toLocaleDateString()}</span>
+                    <span>{new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                    <UserGroupIcon className="h-4 w-4 mr-1" />
-                    <span>{project.teamSize}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <TagIcon className={`h-4 w-4 mr-1 ${getPriorityColor(project.priority)}`} />
-                    <span className={getPriorityColor(project.priority)}>{project.priority}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="relative">
-                  <div className="overflow-hidden h-2 text-xs flex rounded bg-gray-200 dark:bg-gray-700">
-                    <div
-                      style={{ width: `${project.progress}%` }}
-                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary-600"
-                    ></div>
-                  </div>
-                </div>
-                <div className="mt-2 text-right text-xs text-gray-500 dark:text-gray-400">
-                  {project.progress}% Complete
                 </div>
               </div>
             </div>
