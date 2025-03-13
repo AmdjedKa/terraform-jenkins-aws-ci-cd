@@ -176,7 +176,7 @@ const TaskPage = () => {
             </p>
             <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center space-x-4">
-                <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
+                <span>Due: {new Date(task.dueDate).toLocaleDateString('en-GB')}</span>
                 {task.project && <span>Project: {task.project}</span>}
               </div>
             </div>

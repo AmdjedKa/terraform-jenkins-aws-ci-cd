@@ -129,7 +129,7 @@ const ProjectListPage = () => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                     <ClockIcon className="h-4 w-4 mr-1" />
-                    <span>{new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}</span>
+                    <span>{new Date(project.startDate).toLocaleDateString('en-GB')} - {new Date(project.endDate).toLocaleDateString('en-GB')}</span>
                   </div>
                 </div>
               </div>
