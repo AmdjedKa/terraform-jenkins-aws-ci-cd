@@ -110,6 +110,25 @@ exports.updateTask = async (req, res) => {
   }
 };
 
+exports.updateTaskStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const task = await Task.findByPk(id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    task.status = status;
+    await task.save();
+    res.status(200).json(task);
+  } catch (error) {
+    console.error('Error updating task status:', error);
+    res.status(500).json({ message: 'Server error updating task status' });
+  }
+};
+
 exports.deleteTask = async (req, res) => {
   try {
     const { id } = req.params;
