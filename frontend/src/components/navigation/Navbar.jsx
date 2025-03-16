@@ -5,7 +5,6 @@ import {
   Bars3Icon,
   XMarkIcon,
   UserCircleIcon,
-  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
 
@@ -46,7 +45,6 @@ const Navbar = () => {
               <div className="flex">
                 <div className="flex flex-shrink-0 items-center">
                   <Link to="/" className="flex items-center text-xl font-bold text-primary-600">
-                    <CheckCircleIcon className="h-6 w-6 mr-2" />
                     <span>TaskMaster</span>
                   </Link>
                 </div>
