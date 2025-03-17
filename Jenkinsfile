@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCOUNT_ID = '851725608377'
+        AWS_ACCOUNT_ID = credentials('aws_account_id')
         AWS_REGION = 'us-east-1'
         VERSION = 'latest'
         CLUSTER_NAME = 'main-cluster'
-        GITHUB_REPO = "https://github.com/AmdjedKa/ci-cd-aws-microservices-terraform-jenkins.git"
+        GITHUB_REPO = "https://github.com/AmdjedKa/terraform-jenkins-aws-ci-cd.git"
         DOCKER_BUILDKIT = '1'
         ECR_REGISTRY = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         BUILD_VERSION = "${BUILD_NUMBER}"
@@ -91,7 +91,18 @@ pipeline {
 
                     // Wait for the NGINX Ingress controller pod to be running
                     sh """
-                        kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
+                        kubectl wait --namespace ingress-nginx \
+                        --for=condition=available deployment/ingress-nginx-controller --timeout=120s
+                    """
+
+                    // Wait for the admission webhook service to have endpoints
+                    sh """
+                        echo "Waiting for ingress-nginx-controller-admission service endpoints..."
+                        until kubectl get endpoints ingress-nginx-controller-admission -n ingress-nginx | grep -q ingress; do
+                            sleep 10
+                            echo "Still waiting for ingress-nginx-controller-admission endpoints..."
+                        done
+                        echo "Admission webhook service is ready!"
                     """
 
                     // Apply the consolidated manifest file with variable substitution
@@ -129,6 +140,25 @@ pipeline {
                     // Print the ingress URL
                     sh """
                         kubectl get ingress microservices-ingress
+                    """
+                }
+            }
+        }
+
+        stage("Configure Prometheus & Grafana") {
+            steps {
+                script {
+                    sh """
+                        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
+                        helm repo update
+                        
+                        kubectl create namespace prometheus --dry-run=client -o yaml | kubectl apply -f -
+                        
+                        helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n prometheus
+                        
+                        for svc in prometheus-grafana prometheus-kube-prometheus-prometheus; do
+                            kubectl patch svc \$svc -n prometheus -p '{"spec": {"type": "LoadBalancer"}}'
+                        done
                     """
                 }
             }
