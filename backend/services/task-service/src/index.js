@@ -1,17 +1,10 @@
 const express = require('express');
-const cors = require('cors');
 const { sequelize } = require('./config/database');
 const taskRoutes = require('./routes/task.routes');
 const { logger } = require('./utils/logger');
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: ['*', 'localhost:3000', 'http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
 app.use(express.json());
 
 // Routes
