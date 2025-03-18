@@ -4,9 +4,9 @@ import { SparklesIcon } from '@heroicons/react/24/outline';
 const Footer = () => {
   const navigation = {
     main: [
-      { name: 'About', href: 'https://github.com/AmdjedKa/' },
       { name: 'Features', href: '/features' },
       { name: 'Pricing', href: '/pricing' },
+      { name: 'Contact Us', href: 'https://www.linkedin.com/in/amdjed-kaabi/' },
     ],
     social: [
       {

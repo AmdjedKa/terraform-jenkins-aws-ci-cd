@@ -32,12 +32,13 @@ exports.createTask = async (req, res) => {
 
 exports.getTasks = async (req, res) => {
   try {
-    const { projectId, status, createdById } = req.query;
-    const whereClause = {};
+    const createdById = req.user.userId;
+    const { projectId, status } = req.query;
+
+    const whereClause = { createdById };
 
     if (projectId) whereClause.projectId = projectId;
     if (status) whereClause.status = status;
-    if (createdById) whereClause.createdById = createdById;
 
     const tasks = await Task.findAll({
       where: whereClause,

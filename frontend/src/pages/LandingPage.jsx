@@ -6,12 +6,14 @@ import {
   CalendarIcon,
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
+
 
 const FeatureCard = ({ icon: Icon, title, description }) => (
   <motion.div
     whileHover={{ y: -5 }}
     className="card hover:shadow-xl transition-shadow duration-200"
-  >
+    >
     <div className="flex flex-col items-center text-center">
       <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-full mb-4">
         <Icon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
@@ -23,6 +25,8 @@ const FeatureCard = ({ icon: Icon, title, description }) => (
 );
 
 const LandingPage = () => {
+  const { user } = useAuth();
+  
   const features = [
     {
       icon: CheckCircleIcon,
@@ -64,7 +68,7 @@ const LandingPage = () => {
             <div className="mt-10 flex justify-center space-x-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
-                  to="/signup"
+                  to={user ? ("/dashboard") : ("/signup")}
                   className="btn-primary inline-flex items-center space-x-2"
                 >
                   <span>Get Started</span>
@@ -121,7 +125,7 @@ const LandingPage = () => {
           <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
-                to="/signup"
+                to={user ? ("/dashboard") : ("/signup")}
                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-primary-600 bg-white hover:bg-primary-50"
               >
                 Get started

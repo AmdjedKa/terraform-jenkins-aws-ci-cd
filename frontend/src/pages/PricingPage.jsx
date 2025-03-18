@@ -5,7 +5,6 @@ const tiers = [
   {
     name: 'Basic',
     id: 'tier-basic',
-    href: '#',
     priceMonthly: '$10',
     description: 'Perfect for individual users managing simple tasks.',
     features: [
@@ -19,7 +18,6 @@ const tiers = [
   {
     name: 'Pro',
     id: 'tier-pro',
-    href: '#',
     priceMonthly: '$25',
     description: 'Ideal for teams managing complex projects and tasks.',
     features: [
@@ -34,7 +32,6 @@ const tiers = [
   {
     name: 'Enterprise',
     id: 'tier-enterprise',
-    href: '#',
     priceMonthly: 'Custom',
     description: 'Tailored support and tools for large teams and businesses.',
     features: [
@@ -81,7 +78,7 @@ const PricingPage = () => {
                 tier.featured
                   ? 'relative bg-gray-900 shadow-2xl'
                   : 'bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700',
-                'rounded-3xl p-8 xl:p-10'
+                'my-2 rounded-3xl p-8 xl:p-10'
               )}
             >
               <div className="flex items-center justify-between gap-x-4">
@@ -119,7 +116,7 @@ const PricingPage = () => {
                 </span>
               </p>
               <a
-                href={tier.href}
+                href="/"
                 className={classNames(
                   tier.featured
                     ? 'bg-primary-600 text-white hover:bg-primary-500 focus-visible:outline-primary-600'

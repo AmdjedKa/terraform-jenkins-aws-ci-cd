@@ -37,7 +37,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen pt-16 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="pt-16 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -63,7 +63,7 @@ const LoginPage = () => {
               required
               value={formData.email}
               onChange={handleChange}
-              className="input-field mt-1"
+              className="mt-1 border border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-lg py-2 px-4 outline-none"
               placeholder="Enter your email"
             />
           </div>
@@ -80,7 +80,7 @@ const LoginPage = () => {
               required
               value={formData.password}
               onChange={handleChange}
-              className="input-field mt-1"
+              className="mt-1 border border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-lg py-2 px-4 outline-none"
               placeholder="Enter your password"
             />
           </div>

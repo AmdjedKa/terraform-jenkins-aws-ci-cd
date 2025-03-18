@@ -99,7 +99,7 @@ const FeaturesPage = () => {
             <motion.a
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
-              href="/signup"
+              href="/"
               className="inline-block rounded-md bg-primary-600 px-6 py-3 text-lg font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
             >
               Get started for free

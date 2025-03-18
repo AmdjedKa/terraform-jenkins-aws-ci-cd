@@ -64,7 +64,7 @@ const NewProjectPage = () => {
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Project Name
               </label>
               <input
@@ -74,12 +74,12 @@ const NewProjectPage = () => {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md py-3 px-4"
               />
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Description
               </label>
               <textarea
@@ -88,13 +88,13 @@ const NewProjectPage = () => {
                 rows={3}
                 value={formData.description}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md py-3 px-4"
               />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                <label htmlFor="startDate" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                   Start Date
                 </label>
                 <input
@@ -104,12 +104,12 @@ const NewProjectPage = () => {
                   required
                   value={formData.startDate}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md p-3 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                <label htmlFor="endDate" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                   End Date
                 </label>
                 <input
@@ -119,13 +119,13 @@ const NewProjectPage = () => {
                   required
                   value={formData.endDate}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md p-3 focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Status
               </label>
               <select
@@ -133,7 +133,7 @@ const NewProjectPage = () => {
                 id="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md p-3 focus:outline-none"
               >
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>

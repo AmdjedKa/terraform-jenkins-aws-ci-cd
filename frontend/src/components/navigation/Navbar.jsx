@@ -37,7 +37,7 @@ const Navbar = () => {
   };
 
   return (
-    <Disclosure as="nav" className="bg-white dark:bg-gray-800 shadow-lg backdrop-blur-md bg-opacity-90 dark:bg-opacity-90 fixed w-full z-50">
+    <Disclosure as="nav" className="bg-white dark:bg-gray-800 shadow-lg fixed w-full z-50">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -88,17 +88,18 @@ const Navbar = () => {
                     >
                       <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              to="/profile"
-                              className={classNames(
-                                active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                                'block px-4 py-2 text-sm text-gray-700 dark:text-gray-300'
-                              )}
-                            >
-                              Your Profile
-                            </Link>
-                          )}
+                          <div className="flex items-center px-4">
+                            <div className="flex-shrink-0">
+                              <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-300">
+                                {user.name ? user.name.charAt(0).toUpperCase() : 
+                                  <UserCircleIcon className="h-6 w-6" />}
+                              </div>
+                            </div>
+                            <div className="ml-3">
+                              <div className="text-base font-medium text-gray-800 dark:text-white">{user.name}</div>
+                              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{user.email}</div>
+                            </div>
+                          </div>
                         </Menu.Item>
                         <Menu.Item>
                           {({ active }) => (
@@ -106,7 +107,7 @@ const Navbar = () => {
                               onClick={logout}
                               className={classNames(
                                 active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                                'block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300'
+                                'border-t border-gray-200 block w-full text-left px-4 py-2 mt-1 text-sm text-gray-700 dark:text-gray-300'
                               )}
                             >
                               Sign out
@@ -179,13 +180,6 @@ const Navbar = () => {
                   </div>
                 </div>
                 <div className="mt-3 space-y-1">
-                  <Disclosure.Button
-                    as={Link}
-                    to="/profile"
-                    className="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200"
-                  >
-                    Your Profile
-                  </Disclosure.Button>
                   <Disclosure.Button
                     as="button"
                     onClick={logout}

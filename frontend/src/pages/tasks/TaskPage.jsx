@@ -5,20 +5,41 @@ import {
   PlusIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
-import { tasks } from '../../services/api';
+import { tasks, projects } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const TaskPage = () => {
   const [taskList, setTaskList] = useState([]);
+  const [projectMap, setProjectMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchTasksAndProjects = async () => {
       try {
-        const response = await tasks.getAll();
-        if (Array.isArray(response.data?.data)) {
-          setTaskList(response.data?.data);
+        const tasksResponse = await tasks.getAll();
+        let taskData = [];
+
+        if (Array.isArray(tasksResponse.data?.data)) {
+          taskData = tasksResponse.data?.data;
+          setTaskList(taskData);
+
+          const projectIds = [...new Set(taskData.filter(task => task.projectId).map(task => task.projectId))];
+          
+          // Fetch project details for each unique project ID
+          const projectDetails = {};
+          for (const projectId of projectIds) {
+            try {
+              const projectsResponse = await projects.getById(projectId);
+              if (projectsResponse.data?.data) {
+                projectDetails[projectId] = projectsResponse.data.data;
+              }
+            } catch (projectError) {
+              console.error(`Failed to fetch project ${projectId}:`, projectError);
+            }
+          }
+          
+          setProjectMap(projectDetails);
         } else {
           setTaskList([]); // Fallback to an empty array
         }
@@ -30,7 +51,7 @@ const TaskPage = () => {
       }
     };
   
-    fetchTasks();
+    fetchTasksAndProjects();
   }, []);
 
   const handleStatusChange = async (taskId, newStatus) => {
@@ -75,6 +96,12 @@ const TaskPage = () => {
       default:
         return null;
     }
+  };
+
+  const getProjectName = (projectId) => {
+    if (!projectId) return null;
+    
+    return projectMap[projectId]?.name || `Project #${projectId}`;
   };
 
   if (loading) {
@@ -177,7 +204,7 @@ const TaskPage = () => {
             <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center space-x-4">
                 <span>Due: {new Date(task.dueDate).toLocaleDateString('en-GB')}</span>
-                {task.project && <span>Project: {task.project}</span>}
+                {task.projectId && <span>Project: {getProjectName(task.projectId)}</span>}
               </div>
             </div>
           </motion.div>

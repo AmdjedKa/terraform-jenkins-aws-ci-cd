@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { tasks } from '../../services/api';
+import { tasks, projects } from '../../services/api';
 
 const NewTaskPage = () => {
   const navigate = useNavigate();
@@ -15,6 +15,27 @@ const NewTaskPage = () => {
     projectId: '',
     createdById: '',
   });
+
+  const [projectList, setProjectList] = useState([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await projects.getAll();
+        if (Array.isArray(response.data?.data)) {
+          setProjectList(response.data?.data);
+        } else {
+          setProjectList([]); // Fallback to an empty array
+        }
+      } catch (error) {
+        console.error('Failed to fetch projects:', error);
+        toast.error('Failed to load projects');
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -56,7 +77,7 @@ const NewTaskPage = () => {
       >
         <div className="md:flex md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate sm:text-3xl sm:tracking-tight">
+            <h2 className="text-2xl font-bold leading-7 dark:text-white sm:truncate sm:text-3xl sm:tracking-tight">
               Create New Task
             </h2>
           </div>
@@ -65,7 +86,7 @@ const NewTaskPage = () => {
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Task Title
               </label>
               <input
@@ -75,12 +96,12 @@ const NewTaskPage = () => {
                 required
                 value={formData.title}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md py-3 px-4"
               />
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Description
               </label>
               <textarea
@@ -89,13 +110,13 @@ const NewTaskPage = () => {
                 rows={3}
                 value={formData.description}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                className="border border-transparent hover:border-gray-300 hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md py-3 px-4"
               />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                   Status
                 </label>
                 <select
@@ -103,7 +124,7 @@ const NewTaskPage = () => {
                   id="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md p-3 focus:outline-none"
                 >
                   <option value="todo">To Do</option>
                   <option value="in-progress">In Progress</option>
@@ -112,7 +133,7 @@ const NewTaskPage = () => {
               </div>
 
               <div>
-                <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                <label htmlFor="priority" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                   Priority
                 </label>
                 <select
@@ -120,7 +141,7 @@ const NewTaskPage = () => {
                   id="priority"
                   value={formData.priority}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                  className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md p-3 focus:outline-none"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -130,7 +151,7 @@ const NewTaskPage = () => {
             </div>
 
             <div>
-              <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              <label htmlFor="dueDate" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Due Date
               </label>
               <input
@@ -140,22 +161,28 @@ const NewTaskPage = () => {
                 required
                 value={formData.dueDate}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
+                className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md p-3 focus:outline-none"
               />
             </div>
 
             <div>
-              <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Project ID
+              <label htmlFor="projectId" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
+                Project
               </label>
-              <input
-                type="text"
+              <select
                 name="projectId"
                 id="projectId"
                 value={formData.projectId}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
-              />
+                className="border border-transparent hover:border-gray-300 bg-white shadow-sm appearance-none block w-full rounded-md p-3 focus:outline-none"
+              >
+                <option value="">Select a project</option>
+                {projectList.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
