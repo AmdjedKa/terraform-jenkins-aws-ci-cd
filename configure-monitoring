@@ -1,0 +1,74 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'us-east-1'
+        CLUSTER_NAME = 'main-cluster'
+    }
+
+    stages {
+        stage("Configure Prometheus & Grafana") {
+            steps {
+                script {
+                    sh """
+                        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
+                        helm repo update
+                        
+                        kubectl create namespace prometheus --dry-run=client -o yaml | kubectl apply -f -
+                        
+                        helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n prometheus
+                        
+                        for svc in prometheus-grafana prometheus-kube-prometheus-prometheus; do
+                            kubectl patch svc \$svc -n prometheus -p '{"spec": {"type": "LoadBalancer"}}'
+                        done
+                    """
+                }
+            }
+        }
+
+        stage("Get Monitoring URLs") {
+            steps {
+                script {
+                    // Wait for LoadBalancers to get external IPs
+                    sh """
+                        # Wait for external IPs to be assigned (timeout after 300 seconds)
+                        timeout 300 bash -c 'until kubectl get svc prometheus-grafana -n prometheus -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" | grep -q "."; do sleep 5; done'
+                        timeout 300 bash -c 'until kubectl get svc prometheus-kube-prometheus-prometheus -n prometheus -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" | grep -q "."; do sleep 5; done'
+                    """
+                    
+                    // Get the URLs
+                    env.GRAFANA_URL = sh(
+                        script: "echo http://\$(kubectl get svc prometheus-grafana -n prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):80",
+                        returnStdout: true
+                    ).trim()
+                    
+                    env.PROMETHEUS_URL = sh(
+                        script: "echo http://\$(kubectl get svc prometheus-kube-prometheus-prometheus -n prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):9090",
+                        returnStdout: true
+                    ).trim()
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo 'Monitoring setup completed successfully! ✅\n'
+
+            // Print the Grafana and Prometheus URLs
+            echo "🔗 Grafana URL: ${env.GRAFANA_URL}"
+            echo "🔗 Prometheus URL: ${env.PROMETHEUS_URL}\n"
+
+            // Grafana default credentials
+            echo "🔑 Grafana Login Credentials:"
+            echo "   - Username: admin"
+            echo "   - Password: prom-operator"
+        }
+        failure {
+            echo 'Monitoring setup failed! Check the logs for details.'
+        }
+    }
+}

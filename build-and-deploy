@@ -91,18 +91,7 @@ pipeline {
 
                     // Wait for the NGINX Ingress controller pod to be running
                     sh """
-                        kubectl wait --namespace ingress-nginx \
-                        --for=condition=available deployment/ingress-nginx-controller --timeout=120s
-                    """
-
-                    // Wait for the admission webhook service to have endpoints
-                    sh """
-                        echo "Waiting for ingress-nginx-controller-admission service endpoints..."
-                        until kubectl get endpoints ingress-nginx-controller-admission -n ingress-nginx | grep -q ingress; do
-                            sleep 10
-                            echo "Still waiting for ingress-nginx-controller-admission endpoints..."
-                        done
-                        echo "Admission webhook service is ready!"
+                        kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
                     """
 
                     // Apply the consolidated manifest file with variable substitution
@@ -136,30 +125,6 @@ pipeline {
                             kubectl get pods -l app=\$app -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' || exit 1
                         done
                     """
-
-                    // Print the ingress URL
-                    sh """
-                        kubectl get ingress microservices-ingress
-                    """
-                }
-            }
-        }
-
-        stage("Configure Prometheus & Grafana") {
-            steps {
-                script {
-                    sh """
-                        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
-                        helm repo update
-                        
-                        kubectl create namespace prometheus --dry-run=client -o yaml | kubectl apply -f -
-                        
-                        helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n prometheus
-                        
-                        for svc in prometheus-grafana prometheus-kube-prometheus-prometheus; do
-                            kubectl patch svc \$svc -n prometheus -p '{"spec": {"type": "LoadBalancer"}}'
-                        done
-                    """
                 }
             }
         }
@@ -186,7 +151,29 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline completed successfully! ✅\n'
+
+            // Print the ingress URL
+            script {
+                def ingressUrl = sh(
+                    script: """
+                        INGRESS_URL=""
+
+                        until [ -n "\$INGRESS_URL" ]; do
+                            # Try to get the hostname (which AWS sets as the load balancer URL)
+                            INGRESS_URL=\$(kubectl get ingress microservices-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+                            
+                            if [ -z "\$INGRESS_URL" ]; then
+                                sleep 10
+                            fi
+                        done
+                        echo "\$INGRESS_URL"
+                    """,
+                    returnStdout: true
+                ).trim()
+
+                echo "🔗 Ingress URL:  http://${ingressUrl}"
+            }
         }
         failure {
             echo 'Pipeline failed! Check the logs for details.'
