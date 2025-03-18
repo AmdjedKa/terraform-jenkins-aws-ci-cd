@@ -7,15 +7,6 @@ terraform {
   }
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
-  
-  filter {
-    name   = "opt-in-status"
-    values = ["opt-in-not-required"]
-  }
-}
-
 provider "aws" {
   region = var.aws_region
 }
@@ -23,11 +14,20 @@ provider "aws" {
 provider "kubernetes" {
   host                   = aws_eks_cluster.my_eks.endpoint
   cluster_ca_certificate = base64decode(aws_eks_cluster.my_eks.certificate_authority[0].data)
-  
+
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
     args        = ["eks", "get-token", "--cluster-name", aws_eks_cluster.my_eks.name]
     command     = "aws"
+  }
+}
+
+data "aws_availability_zones" "available" {
+  state = "available"
+
+  filter {
+    name   = "opt-in-status"
+    values = ["opt-in-not-required"]
   }
 }
 
@@ -39,7 +39,7 @@ resource "aws_vpc" "my_vpc" {
   enable_dns_support   = true
 
   tags = {
-    name = "${var.project_name}-vpc"
+    name        = "${var.project_name}-vpc"
     Environment = var.environment
     Project     = var.project_name
   }
@@ -53,9 +53,9 @@ resource "aws_subnet" "public" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "public-subnet-${count.index + 1}"
-    "kubernetes.io/role/elb" = "1"
-    "kubernetes.io/cluster/main-cluster"      = "shared"
+    Name                                 = "public-subnet-${count.index + 1}"
+    "kubernetes.io/role/elb"             = "1"
+    "kubernetes.io/cluster/main-cluster" = "shared"
   }
 }
 
@@ -67,9 +67,9 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "private-subnet-${count.index + 1}"
-    "kubernetes.io/role/internal-elb" = "1"
-    "kubernetes.io/cluster/main-cluster"      = "shared"
+    Name                                 = "private-subnet-${count.index + 1}"
+    "kubernetes.io/role/internal-elb"    = "1"
+    "kubernetes.io/cluster/main-cluster" = "shared"
   }
 }
 
@@ -183,9 +183,9 @@ resource "aws_instance" "jenkins" {
   ami           = "ami-0e86e20dae9224db8"
   instance_type = "t2.large"
   subnet_id     = aws_subnet.public[0].id
-  
+
   vpc_security_group_ids = [aws_security_group.jenkins.id]
-  key_name              = var.key_pair_name
+  key_name               = var.key_pair_name
 
   root_block_device {
     volume_size = 30
@@ -195,13 +195,14 @@ resource "aws_instance" "jenkins" {
   associate_public_ip_address = true
 
   tags = {
-      Name = "jenkins-server"
-    }
-    # Using remote-exec provisioner to install packages
+    Name = "jenkins-server"
+  }
+
+  # Using remote-exec provisioner to install packages
   provisioner "remote-exec" {
     connection {
       type        = "ssh"
-      private_key = file("./key.pem") # replace with your key-name 
+      private_key = file("./key.pem")
       user        = "ubuntu"
       host        = self.public_ip
     }
@@ -238,18 +239,6 @@ resource "aws_instance" "jenkins" {
       "sudo chmod +x /usr/local/bin/kubectl",
       "kubectl version --client",
 
-      # Install Helm
-      "wget https://get.helm.sh/helm-v3.16.1-linux-amd64.tar.gz",
-      "tar -zxvf helm-v3.16.1-linux-amd64.tar.gz",
-      "sudo mv linux-amd64/helm /usr/local/bin/helm",
-      "helm version",
-
-      # Install ArgoCD
-      "VERSION=$(curl -L -s https://raw.githubusercontent.com/argoproj/argo-cd/stable/VERSION)",
-      "curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v$VERSION/argocd-linux-amd64",
-      "sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd",
-      "rm argocd-linux-amd64", 
-
       # Install Java 17
       "sudo apt update -y",
       "sudo apt install openjdk-17-jdk openjdk-17-jre -y",
@@ -262,6 +251,12 @@ resource "aws_instance" "jenkins" {
       "sudo apt-get install -y jenkins",
       "sudo systemctl start jenkins",
       "sudo systemctl enable jenkins",
+
+      # Install Helm
+      "wget https://get.helm.sh/helm-v3.16.1-linux-amd64.tar.gz",
+      "tar -zxvf helm-v3.16.1-linux-amd64.tar.gz",
+      "sudo mv linux-amd64/helm /usr/local/bin/helm",
+      "helm version",
     ]
   }
 }
@@ -294,7 +289,7 @@ resource "aws_security_group" "eks" {
   }
 
   tags = {
-    Name                         = "eks-sg"
+    Name                                 = "eks-sg"
     "kubernetes.io/cluster/main-cluster" = "shared"
   }
 }
@@ -302,10 +297,10 @@ resource "aws_security_group" "eks" {
 # EKS Cluster
 resource "aws_eks_cluster" "my_eks" {
   name     = "main-cluster"
-  role_arn = "arn:aws:iam::851725608377:role/LabRole"
+  role_arn = "arn:aws:iam::${var.aws_account_id}:role/LabRole"
 
   vpc_config {
-    subnet_ids = concat(aws_subnet.public[*].id, aws_subnet.private[*].id)
+    subnet_ids         = concat(aws_subnet.public[*].id, aws_subnet.private[*].id)
     security_group_ids = [aws_security_group.eks.id]
   }
 
@@ -316,7 +311,7 @@ resource "aws_eks_cluster" "my_eks" {
 resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.my_eks.name
   node_group_name = "main-node-group"
-  node_role_arn   = "arn:aws:iam::851725608377:role/LabRole"
+  node_role_arn   = "arn:aws:iam::${var.aws_account_id}:role/LabRole"
   subnet_ids      = aws_subnet.private[*].id
 
   scaling_config {
@@ -335,16 +330,16 @@ resource "aws_eks_node_group" "main" {
 # Add Kubernetes secret resource (created after the RDS instance)
 resource "kubernetes_secret" "db_credentials" {
   metadata {
-    name = "db-credentials"
+    name      = "db-credentials"
     namespace = "default"
   }
 
   data = {
-    DB_NAME     = aws_db_instance.main.db_name
-    DB_USER     = aws_db_instance.main.username
-    DB_PASSWORD = aws_db_instance.main.password
-    DB_HOST     = split(":", aws_db_instance.main.endpoint)[0]  # Extract hostname without port
-    DB_PORT     = "5432"
+    DB_NAME      = aws_db_instance.main.db_name
+    DB_USER      = aws_db_instance.main.username
+    DB_PASSWORD  = aws_db_instance.main.password
+    DB_HOST      = split(":", aws_db_instance.main.endpoint)[0] # Extract hostname without port
+    DB_PORT      = "5432"
     DATABASE_URL = "postgresql://${aws_db_instance.main.username}:${aws_db_instance.main.password}@${split(":", aws_db_instance.main.endpoint)[0]}:5432/${aws_db_instance.main.db_name}"
   }
 
@@ -355,13 +350,13 @@ resource "kubernetes_secret" "db_credentials" {
 
 resource "kubernetes_secret" "env" {
   metadata {
-    name = "env"
+    name      = "env"
     namespace = "default"
   }
 
   data = {
-    NODE_ENV    = var.environment
-    JWT_SECRET  = var.jwt_secret
+    NODE_ENV   = var.environment
+    JWT_SECRET = var.jwt_secret
   }
 
   type = "Opaque"
@@ -378,7 +373,7 @@ resource "aws_security_group" "rds" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    cidr_blocks = [ "10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24" ]
+    cidr_blocks     = ["10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24"]
     security_groups = [aws_security_group.eks.id] # Allow access from EKS cluster
     description     = "PostgreSQL access from EKS"
   }
@@ -410,8 +405,8 @@ resource "aws_db_subnet_group" "main" {
 
 # RDS Database
 resource "aws_db_instance" "main" {
-  identifier           = "${var.project_name}-db"
-  allocated_storage    = 20
+  identifier          = "${var.project_name}-db"
+  allocated_storage   = 20
   storage_type        = "gp2"
   engine              = "postgres"
   engine_version      = "13.18"
@@ -420,7 +415,7 @@ resource "aws_db_instance" "main" {
   username            = var.database_username
   password            = var.database_password
   skip_final_snapshot = true
-  multi_az               = false
+  multi_az            = false
 
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.main.name

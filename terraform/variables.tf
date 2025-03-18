@@ -20,7 +20,7 @@ variable "vpc_cidr" {
 
 variable "key_pair_name" {
   description = "Key Pair"
-  default        = "key"
+  default     = "key"
 }
 
 variable "database_name" {
@@ -31,6 +31,11 @@ variable "database_name" {
 variable "database_username" {
   description = "Database master username"
   default     = "root"
+}
+
+variable "aws_account_id" {
+  description = "Account ID"
+  sensitive   = true
 }
 
 variable "database_password" {
