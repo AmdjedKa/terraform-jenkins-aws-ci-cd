@@ -1,13 +1,12 @@
-### README
-
 # **Terraform-Jenkins CI/CD for AWS Microservices**
-This project implements a complete CI/CD pipeline using **Terraform**, **AWS**, and **Jenkins** to automate the building and the deployment of microservices.
+This project implements a complete CI/CD pipeline using **Terraform**, **AWS**, and **Jenkins** to automate the building and the deployment of a To-do microservices App.
 
 
 ## **Features**
 - **Infrastructure as Code**: Provision and manage cloud resources with Terraform.
 - **AWS Integration**: Seamless integration with AWS services (EC2, ECR, RDS, etc.).
    - *Note*: This project is configured for AWS Academy Learner Lab; a production account would require some configuration adjustments.
+- **Auto Scaling**: Automatically scales the number of nodes in the Kubernetes cluster based on workload demand.
 - **Kubernetes Orchestration**: Deploy services to AWS Elastic Kubernetes Service.
 - **CI/CD Pipeline**: Fully automated build and deployment pipeline in Jenkins.
 - **GitHub Webhook Integration**: Automatically trigger the Jenkins pipeline upon a GitHub push for automated builds.
@@ -48,7 +47,7 @@ This project implements a complete CI/CD pipeline using **Terraform**, **AWS**, 
       jwt_secret = "ObniQRDxKf+gKwKfJq3FDuYd1FWnVptFaClC0XkHaqo="  # Base64 encoded string
       ```
 
-02. Initialize Terraform and apply the configuration:
+02. Initialize Terraform and apply the configuration (takes about 10 minutes):
       ```sh
       terraform init
       terraform apply --auto-approve
@@ -76,7 +75,7 @@ In the GitHub repository:
       - aws_session_token
 
    - **Create a pipeline to build and deploy**:<br><br>
-       1\. Go to `Jenkins Dashboard` > `New Item` > `Pipeline`<br>
+      1\. Go to `Jenkins Dashboard` > `New Item` > `Pipeline`<br>
       2\. Under `Build Triggers`, select **GitHub hook trigger for GITScm polling**<br>
       3\. Under `Pipeline`, set:<br>
       - **Definition**: Pipeline script from SCM
@@ -85,7 +84,7 @@ In the GitHub repository:
       - **Branch Specifier**: */main
       - **Script path**: build-and-deploy
 
-      4\. Click on `Save` then `Build Now`<br>
+      4\. Click on `Save` then `Build Now` (build takes about 3 minutes).<br>
       5\. Once the build is finished, you can access the website by clicking on the `build` > `Console Output` > Scroll to the bottom to get the **ingress url**.<br>
 
    - **Create a pipeline to configure monitoring**:
@@ -100,10 +99,11 @@ In the GitHub repository:
    Open the Grafana URL displayed in the configure-monitoring pipeline build's `Console Output`:
    01. Login
    02. In the header click `+` > `Import dashboard`:
-      - **Grafana.com dashboard url or id**: 1860 then click `Load`
-      - **Prometheus Data Source**: Select `Prometheus`
-      - Click `Import`
+         - **Grafana.com dashboard url or id**: 1860 then click `Load`
+         - **Prometheus Data Source**: Select `Prometheus`
+         - Click `Import`
 
+   (*Note*: It takes a few minutes for the grafana site to be up)
 ## **Usage**
 
 After everything is set up:
@@ -112,7 +112,16 @@ After everything is set up:
 
    - Prometheus collects and stores metrics from the Kubernetes cluster. Grafana provides real-time monitoring dashboards.
 
+   - Auto Scaling dynamically adjusts the number of nodes available in the cluster based on resource utilization (CPU, memory, etc.).
+
+
+<br>
+
+
+![demo](https://github.com/user-attachments/assets/8e1fdbba-76e3-49bf-9c8d-529cb9c9ce51)
+
+
+<br>
 
 ## **License**
-
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
